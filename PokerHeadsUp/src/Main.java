@@ -17,8 +17,9 @@ import javafx.scene.control.Label;
 import javafx.collections.ListChangeListener.Change;
 import javafx.util.converter.IntegerStringConverter;
 import java.util.function.UnaryOperator;
-
+import javafx.scene.control.TextArea;
 import static java.lang.Integer.parseInt;
+
 
 public class Main extends Application{
 
@@ -27,6 +28,8 @@ public class Main extends Application{
     Button playerFold;
     Button computerCheck;
     Button computerFold;
+    Button computerCall;
+    Button playerCall;
     Deck officialDeck = new Deck();
     public Integer betCount = 0;
     /*initialize human and computer players*/
@@ -39,6 +42,8 @@ public class Main extends Application{
     Label playerStack = new Label(" Stack:" + Integer.toString(human.stack));
     Label betAmountPlayer = new Label(" Bet:" + Integer.toString(human.bet));
     Label betAmountComp = new Label(" Bet:" + Integer.toString(computer.bet));
+    Label raiseFieldComputer = new Label("R/RR:");
+    Label raiseFieldPlayer = new Label("R/RR:");
     TextField bettingWindowAI = new TextField();
     TextField bettingWindow = new TextField();
     Label pot = new Label(" Pot:" + Integer.toString(officialDeck.potMoney));
@@ -54,11 +59,13 @@ public class Main extends Application{
         /*code for call, fold buttons*/
         playerCheck = new Button("Check");
         playerFold = new Button("Fold");
-        VBox bottomButt = new VBox(5, playerCheck, playerFold);
+        playerCall = new Button("Call");
+        VBox bottomButt = new VBox(5, playerCall, playerCheck, playerFold);
         bottomButt.setAlignment(Pos.CENTER);
         computerCheck = new Button("Check");
         computerFold = new Button("Fold");
-        VBox topButt = new VBox(5, computerCheck, computerFold);
+        computerCall = new Button("Call");
+        VBox topButt = new VBox(5, computerCall, computerCheck, computerFold);
         topButt.setAlignment(Pos.CENTER);
         dealCards = new Button("Deal Cards!");
 
@@ -137,8 +144,8 @@ public class Main extends Application{
         playerCheck.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (human.check(human.bet - computer.bet) == 1 && officialDeck.actionOn % 2 == 0){
-                    officialDeck.actionOn += human.check(human.bet - computer.bet);
+                if (human.checkEqualsZero(human.bet - computer.bet) == 1 && officialDeck.playersTurn){
+                    officialDeck.playersTurn = false;
                     officialDeck.actionChange += 1;
                     bettingOver();
                     /*disgusting hack for now, basically update all 5 cards whenever possible*/
@@ -155,9 +162,9 @@ public class Main extends Application{
             @Override
             public void handle(ActionEvent event) {
 
-                if (computer.check(human.bet - computer.bet) == 1 && officialDeck.actionOn % 2 == 1){
-                    officialDeck.actionOn += computer.check(human.bet - computer.bet);
+                if (computer.checkEqualsZero(human.bet - computer.bet) == 1 && !officialDeck.playersTurn){
                     officialDeck.actionChange += 1;
+                    officialDeck.playersTurn = true;
                     bettingOver();
                     /*disgusting hack for now, basically update all 5 cards whenever possible*/
                     Flop1.setImage(community1);
@@ -172,14 +179,15 @@ public class Main extends Application{
 
         bettingWindow.setOnAction(new EventHandler<ActionEvent>() {
             @Override
+
             public void handle(ActionEvent event) {
-                if (officialDeck.actionOn % 2 == 0 && cardsDealt){
+                if (officialDeck.playersTurn && cardsDealt){
                     bettingWindow.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
-                    human.bet(parseInt(bettingWindow.getText()));
-                    officialDeck.potMoney += parseInt(bettingWindow.getText());
-                    officialDeck.actionOn += 1;
+                    Integer betAmount = human.correctBet(parseInt(bettingWindow.getText()), computer.bet);
+                    human.bet(betAmount);
+                    officialDeck.potMoney += betAmount;
+                    officialDeck.playersTurn = false;
                     officialDeck.actionChange += 1;
-                    System.out.print(officialDeck.actionChange);
                     /*update the values, and see if the betting is over*/
                     updatesValues();
                     bettingOver();
@@ -189,8 +197,7 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
-
-
+                    bettingWindow.clear();
                 }
             }
         });
@@ -198,14 +205,38 @@ public class Main extends Application{
         bettingWindowAI.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (officialDeck.actionOn % 2 == 1 && cardsDealt){
+                if (!officialDeck.playersTurn &&  cardsDealt){
                     bettingWindowAI.setTextFormatter(new TextFormatter<>(new IntegerStringConverter()));
-                    computer.bet(parseInt(bettingWindowAI.getText()));
-                    officialDeck.potMoney += parseInt(bettingWindowAI.getText());
-                    officialDeck.actionOn += 1;
+                    Integer betAmount = computer.correctBet(parseInt(bettingWindowAI.getText()), human.bet);
+                    computer.bet(betAmount);
+                    officialDeck.potMoney += betAmount;
+                    officialDeck.playersTurn = true;
                     officialDeck.actionChange += 1;
-                    System.out.print(officialDeck.actionChange);
                     /*update the values, and see if the betting is over*/
+                    updatesValues();
+                    bettingOver();
+                    /*disgusting hack for now, basically update all 5 cards whenever possible*/
+                    Flop1.setImage(community1);
+                    Flop2.setImage(community2);
+                    Flop3.setImage(community3);
+                    Turn.setImage(community4);
+                    River.setImage(community5);
+                    bettingWindowAI.clear();
+                }
+            }
+        });
+
+        playerCall.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                /*Check that it's the players turn, that the cards have been dealt, and the bet amounts aren't equal*/
+                if (officialDeck.playersTurn && cardsDealt && computer.checkEqualsZero(human.bet - computer.bet) == 0) {
+                    Integer betAmount = human.correctCall(computer.bet - human.bet);
+                    human.call(betAmount);
+                    officialDeck.potMoney += betAmount;
+                    officialDeck.playersTurn = false;
+                    officialDeck.actionChange += 1;
+                    /*whenever a call occurs, the betting is automatically over. bettingOver() should catch this.*/
                     updatesValues();
                     bettingOver();
                     /*disgusting hack for now, basically update all 5 cards whenever possible*/
@@ -218,10 +249,35 @@ public class Main extends Application{
             }
         });
 
+        computerCall.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                /*Check that it's the players turn, that the cards have been dealt, and the bet amounts aren't equal*/
+                if (!officialDeck.playersTurn && cardsDealt && computer.checkEqualsZero(human.bet - computer.bet) == 0) {
+                    Integer betAmount = computer.correctCall(human.bet - computer.bet);
+                    computer.call(betAmount);
+                    officialDeck.potMoney += betAmount;
+                    officialDeck.playersTurn = true;
+                    officialDeck.actionChange += 1;
+                    /*whenever a call occurs, the betting is automatically over. bettingOver() should catch this.*/
+                    updatesValues();
+                    bettingOver();
+                    /*disgusting hack for now, basically update all 5 cards whenever possible*/
+                    Flop1.setImage(community1);
+                    Flop2.setImage(community2);
+                    Flop3.setImage(community3);
+                    Turn.setImage(community4);
+                    River.setImage(community5);
+                }
+            }
+        });
+
+
+
         /*mumbo jumbo to create the GUI*/
-        HBox topCards = new HBox(10, AIStack, bettingWindowAI, compCard1, compCard2, betAmountComp, topButt);
+        HBox topCards = new HBox(10, AIStack, raiseFieldComputer, bettingWindowAI, compCard1, compCard2, betAmountComp, topButt);
         HBox commCards = new HBox(10, pot, Flop1, Flop2, Flop3, Turn, River, dealCards);
-        HBox botCards = new HBox(10,playerStack, bettingWindow, Person1, Person2, betAmountPlayer, bottomButt);
+        HBox botCards = new HBox(10,playerStack,raiseFieldPlayer, bettingWindow, Person1, Person2, betAmountPlayer, bottomButt);
         commCards.setAlignment(Pos.CENTER);
         topCards.setAlignment(Pos.CENTER);
         botCards.setAlignment(Pos.CENTER);
@@ -279,6 +335,7 @@ public class Main extends Application{
     }
 
     public void riverCard(){
+        System.out.println("this was called");
         String[] riverCard = officialDeck.river();
         String theRiver = riverCard[0];
         community5 = new Image(theRiver);
@@ -294,17 +351,20 @@ public class Main extends Application{
                 updatesValues();
                 flopCards();
                 officialDeck.actionChange = 0;
+                officialDeck.playersTurn = true;
 
             }
             if (action.equals("turn")){
                 updatesValues();
                 turnCard();
                 officialDeck.actionChange = 0;
+                officialDeck.playersTurn = true;
             }
             if (action.equals("river")){
                 updatesValues();
                 riverCard();
                 officialDeck.actionChange = 0;
+                officialDeck.playersTurn = true;
             }
         }
     }

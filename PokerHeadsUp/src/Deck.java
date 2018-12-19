@@ -12,6 +12,7 @@ public class Deck {
     boolean riverDealt = false;
     Integer actionOn = 0;
     Integer actionChange = 0;
+    boolean playersTurn = true;
     Integer gameState = 0;
     String[] variousAction = {"flop","turn","river"};
     public Integer potMoney = 0;
