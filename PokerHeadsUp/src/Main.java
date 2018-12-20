@@ -36,6 +36,7 @@ public class Main extends Application{
     Human human = new Human();
     Computer computer = new Computer();
     boolean cardsDealt = false;
+    boolean humanDealer = true;
 
     /*framework of money/betting GUI*/
     Label AIStack = new Label(" Stack:" + Integer.toString(computer.stack));
@@ -154,6 +155,10 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                 }
             }
         });
@@ -172,6 +177,10 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                 }
             }
         });
@@ -197,6 +206,10 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                     bettingWindow.clear();
                 }
             }
@@ -221,6 +234,10 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                     bettingWindowAI.clear();
                 }
             }
@@ -245,6 +262,10 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                 }
             }
         });
@@ -268,7 +289,44 @@ public class Main extends Application{
                     Flop3.setImage(community3);
                     Turn.setImage(community4);
                     River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                 }
+            }
+        });
+
+        computerFold.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                reset();
+                updatesValues();
+                Flop1.setImage(community1);
+                Flop2.setImage(community2);
+                Flop3.setImage(community3);
+                Turn.setImage(community4);
+                River.setImage(community5);
+                compCard1.setImage(computerCard1);
+                compCard2.setImage(computerCard2);
+                Person1.setImage(playerCard1);
+                Person2.setImage(playerCard2);
+                }
+            });
+        playerFold.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent event) {
+                reset();
+                updatesValues();
+                Flop1.setImage(community1);
+                Flop2.setImage(community2);
+                Flop3.setImage(community3);
+                Turn.setImage(community4);
+                River.setImage(community5);
+                compCard1.setImage(computerCard1);
+                compCard2.setImage(computerCard2);
+                Person1.setImage(playerCard1);
+                Person2.setImage(playerCard2);
             }
         });
 
@@ -342,6 +400,28 @@ public class Main extends Application{
         officialDeck.turnCard = theRiver;
 
     }
+
+    public void reset(){
+        
+        human.stack += officialDeck.potMoney;
+        officialDeck.potMoney = 0;
+        officialDeck.actionChange = 0;
+        human.bet = 0;
+        computer.bet = 0;
+        officialDeck.gameState = 0;
+        officialDeck.playersTurn = !officialDeck.playersTurn;
+        humanDealer = !humanDealer;
+        computerCard1 = new Image("file:JPEG/blue_back.jpg");
+        computerCard2 = new Image("file:JPEG/blue_back.jpg");
+        playerCard1 = new Image("file:JPEG/blue_back.jpg");
+        playerCard2 = new Image("file:JPEG/blue_back.jpg");
+        community1 = new Image("file:JPEG/blue_back.jpg");
+        community2 = new Image("file:JPEG/blue_back.jpg");
+        community3 = new Image("file:JPEG/blue_back.jpg");
+        community4 = new Image("file:JPEG/blue_back.jpg");
+        community5 = new Image("file:JPEG/blue_back.jpg");
+        cardsDealt = false;
+    }
     /*this method checks whether or not betting is over at any given state change*/
     public void bettingOver(){
         if (human.bet - computer.bet == 0 && officialDeck.actionChange > 1){
@@ -351,23 +431,31 @@ public class Main extends Application{
                 updatesValues();
                 flopCards();
                 officialDeck.actionChange = 0;
-                officialDeck.playersTurn = true;
+                /*must reset to whoever started the hand with the betting*/
+                officialDeck.playersTurn = humanDealer;
 
             }
             if (action.equals("turn")){
                 updatesValues();
                 turnCard();
                 officialDeck.actionChange = 0;
-                officialDeck.playersTurn = true;
+                officialDeck.playersTurn = humanDealer;
             }
             if (action.equals("river")){
                 updatesValues();
                 riverCard();
                 officialDeck.actionChange = 0;
-                officialDeck.playersTurn = true;
+                officialDeck.playersTurn = humanDealer;
+            }
+
+            if (action.equals("postRiver")){
+                /*if this if statement is called, the hand is over*/
+                reset();
+                updatesValues();
             }
         }
     }
+
 
 
     /*initial background of cards */

@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 public class Deck {
+    public ArrayList<String> fullDeckOfCards = new ArrayList<String>();;
     public ArrayList<String> deckOfCards = new ArrayList<String>();;
     String tempSuitString;
     String number;
@@ -14,7 +15,7 @@ public class Deck {
     Integer actionChange = 0;
     boolean playersTurn = true;
     Integer gameState = 0;
-    String[] variousAction = {"flop","turn","river"};
+    String[] variousAction = {"flop","turn","river", "postRiver"};
     public Integer potMoney = 0;
     String flopCardOne;
     String flopCardTwo;
@@ -59,6 +60,7 @@ public class Deck {
                     number = "K";
                 }
                 deckOfCards.add(number + tempSuitString);
+                fullDeckOfCards.add(number + tempSuitString);
             }
         }
     }
@@ -99,8 +101,16 @@ public class Deck {
     public String[] river(){
         String[] returnList = new String[1];
         returnList[0] = withdrawCard();
+        gameState += 1;
         return returnList;
     }
+
+    public void postRiver(){
+
+
+
+    }
+
 
 
 
