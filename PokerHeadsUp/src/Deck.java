@@ -112,9 +112,16 @@ public class Deck {
     }
 
 
+    public void copyDeck(){
+            deckOfCards = new ArrayList<String>();
+            populateDeck();
+        }
+    }
 
 
 
 
 
-}
+
+
+

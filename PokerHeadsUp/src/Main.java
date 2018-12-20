@@ -145,7 +145,7 @@ public class Main extends Application{
         playerCheck.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (human.checkEqualsZero(human.bet - computer.bet) == 1 && officialDeck.playersTurn){
+                if (human.checkEqualsZero(human.bet - computer.bet) == 1 && officialDeck.playersTurn && cardsDealt){
                     officialDeck.playersTurn = false;
                     officialDeck.actionChange += 1;
                     bettingOver();
@@ -167,7 +167,7 @@ public class Main extends Application{
             @Override
             public void handle(ActionEvent event) {
 
-                if (computer.checkEqualsZero(human.bet - computer.bet) == 1 && !officialDeck.playersTurn){
+                if (computer.checkEqualsZero(human.bet - computer.bet) == 1 && !officialDeck.playersTurn && cardsDealt){
                     officialDeck.actionChange += 1;
                     officialDeck.playersTurn = true;
                     bettingOver();
@@ -247,7 +247,7 @@ public class Main extends Application{
             @Override
             public void handle(ActionEvent event) {
                 /*Check that it's the players turn, that the cards have been dealt, and the bet amounts aren't equal*/
-                if (officialDeck.playersTurn && cardsDealt && computer.checkEqualsZero(human.bet - computer.bet) == 0) {
+                if (officialDeck.playersTurn && cardsDealt && computer.checkEqualsZero(human.bet - computer.bet) == 0 && cardsDealt) {
                     Integer betAmount = human.correctCall(computer.bet - human.bet);
                     human.call(betAmount);
                     officialDeck.potMoney += betAmount;
@@ -300,33 +300,37 @@ public class Main extends Application{
         computerFold.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
-                reset();
-                updatesValues();
-                Flop1.setImage(community1);
-                Flop2.setImage(community2);
-                Flop3.setImage(community3);
-                Turn.setImage(community4);
-                River.setImage(community5);
-                compCard1.setImage(computerCard1);
-                compCard2.setImage(computerCard2);
-                Person1.setImage(playerCard1);
-                Person2.setImage(playerCard2);
+                if (!officialDeck.playersTurn && cardsDealt) {
+                    reset();
+                    updatesValues();
+                    Flop1.setImage(community1);
+                    Flop2.setImage(community2);
+                    Flop3.setImage(community3);
+                    Turn.setImage(community4);
+                    River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
                 }
+            }
             });
         playerFold.setOnAction(new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent event) {
-                reset();
-                updatesValues();
-                Flop1.setImage(community1);
-                Flop2.setImage(community2);
-                Flop3.setImage(community3);
-                Turn.setImage(community4);
-                River.setImage(community5);
-                compCard1.setImage(computerCard1);
-                compCard2.setImage(computerCard2);
-                Person1.setImage(playerCard1);
-                Person2.setImage(playerCard2);
+                if (officialDeck.playersTurn && cardsDealt) {
+                    reset();
+                    updatesValues();
+                    Flop1.setImage(community1);
+                    Flop2.setImage(community2);
+                    Flop3.setImage(community3);
+                    Turn.setImage(community4);
+                    River.setImage(community5);
+                    compCard1.setImage(computerCard1);
+                    compCard2.setImage(computerCard2);
+                    Person1.setImage(playerCard1);
+                    Person2.setImage(playerCard2);
+                }
             }
         });
 
@@ -393,7 +397,6 @@ public class Main extends Application{
     }
 
     public void riverCard(){
-        System.out.println("this was called");
         String[] riverCard = officialDeck.river();
         String theRiver = riverCard[0];
         community5 = new Image(theRiver);
@@ -402,14 +405,15 @@ public class Main extends Application{
     }
 
     public void reset(){
-        
+
         human.stack += officialDeck.potMoney;
         officialDeck.potMoney = 0;
         officialDeck.actionChange = 0;
         human.bet = 0;
+        officialDeck.copyDeck();
         computer.bet = 0;
         officialDeck.gameState = 0;
-        officialDeck.playersTurn = !officialDeck.playersTurn;
+        officialDeck.playersTurn = !humanDealer;
         humanDealer = !humanDealer;
         computerCard1 = new Image("file:JPEG/blue_back.jpg");
         computerCard2 = new Image("file:JPEG/blue_back.jpg");
