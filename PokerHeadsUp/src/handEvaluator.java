@@ -196,7 +196,6 @@ public class handEvaluator {
             for (int i = 0; i < allCardsNOSUIT.length; i++) {
 
             }
-
         }
     }
 
