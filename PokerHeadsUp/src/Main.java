@@ -400,7 +400,7 @@ public class Main extends Application{
         String[] riverCard = officialDeck.river();
         String theRiver = riverCard[0];
         community5 = new Image(theRiver);
-        officialDeck.turnCard = theRiver;
+        officialDeck.riverCard = theRiver;
 
     }
 
@@ -430,7 +430,6 @@ public class Main extends Application{
     public void bettingOver(){
         if (human.bet - computer.bet == 0 && officialDeck.actionChange > 1){
             String action = officialDeck.variousAction[officialDeck.gameState];
-            System.out.print(officialDeck.gameState);
             if (action.equals("flop")){
                 updatesValues();
                 flopCards();
@@ -454,6 +453,18 @@ public class Main extends Application{
 
             if (action.equals("postRiver")){
                 /*if this if statement is called, the hand is over*/
+                String[] inputs = new String[9];
+                inputs[0] = human.card1;
+                inputs[1] = human.card2;
+                inputs[2] = computer.card1;
+                inputs[3] = computer.card2;
+                inputs[4] = officialDeck.flopCardOne;
+                inputs[5] = officialDeck.flopCardTwo;
+                inputs[6] = officialDeck.flopCardThree;
+                inputs[7] = officialDeck.turnCard;
+                inputs[8] = officialDeck.riverCard;
+                Solver solver = new Solver(inputs);
+                solver.winner();
                 reset();
                 updatesValues();
             }

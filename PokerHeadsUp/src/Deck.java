@@ -7,10 +7,6 @@ public class Deck {
     String tempSuitString;
     String number;
     Random rand = new Random();
-    boolean cardsDealt = false;
-    boolean flopDealt = false;
-    boolean turnDealt = false;
-    boolean riverDealt = false;
     Integer actionOn = 0;
     Integer actionChange = 0;
     boolean playersTurn = true;
@@ -107,9 +103,8 @@ public class Deck {
 
     public void postRiver(){
 
-
-
     }
+
 
 
     public void copyDeck(){

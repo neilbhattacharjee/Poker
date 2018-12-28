@@ -19,7 +19,6 @@ public class Player {
         if (amount > stack) {
             return stack;
         }
-
         return amount + (opponentBet - bet);
     }
 
