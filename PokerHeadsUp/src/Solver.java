@@ -35,8 +35,7 @@ public class Solver {
     public boolean winner() {
         /*this is the first method that actually requires brain work. Everything up to this point has been shitty framework*/
         /*Will create an instance of hand evaluator, which will take 7 cards and output the best card */
-        handEvaluator handEvaluator = new handEvaluator(playerCards, board);
-        handEvaluator.royalFlush();
+        handEvaluator handEvaluator = new handEvaluator(board);
         return false;
     }
 

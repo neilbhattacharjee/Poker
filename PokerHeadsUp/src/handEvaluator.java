@@ -1,50 +1,48 @@
 import java.util.LinkedList;
 import java.util.*;
 import java.util.Comparator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 public class handEvaluator {
-    /*This class will take in 7 cards and output the best hand*/
-    String[] handCards = new String[2];
-    String[] board = new String[5];
-    String[] allCards = new String[7];
-    String[] allCardsNOSUIT = new String[7];
-    String[] allCardsNOSUITSORTED = new String[7];
+    /*This class will take in 5 cards and output the best hand*/
+    String[] allCards = new String[5];
+    String[] allCardsNOSUIT = new String[5];
+    Object[] allCardsSuited = new String[5];
     String[] noHand = new String[]{"X", "X", "X", "X", "X"};
     Map<String, Integer> rankValues = new HashMap<String, Integer>();
+    HashMap<String, Integer> handDict = new HashMap<String, Integer>();
+    Integer handValue = 0;
 
 
-    public handEvaluator(String[] inHandCards, String[] inBoard) {
-        this.handCards = inHandCards;
-        this.board = inBoard;
+    public handEvaluator( String[] board) {
         /*transfer handCards and board cards into the same array, allCards*/
-
-        for (int i = 0; i < inHandCards.length; i++) {
-            allCards[i] = inHandCards[i];
-        }
-        for (int i = 2; i < inBoard.length + 2; i++) {
-            allCards[i] = inBoard[i - 2];
+        for (int i = 0; i < board.length; i++) {
+            allCards[i] = board[i];
         }
         removeJPEG();
         deSuitSort();
         populateDict();
+        addHandValues();
+        sort();
 
     }
     /*The card names are currently in the format "file:JPEG/XX.jpg" */
     /*This method will remove the fluff and keep the XX */
 
     private void removeJPEG() {
-
-        for (int i = 0; i < handCards.length; i++) {
-            handCards[i] = handCards[i].replace("file:JPEG/", "");
-            handCards[i] = handCards[i].replace(".jpg", "");
-        }
-        for (int i = 0; i < board.length; i++) {
-            board[i] = board[i].replace("file:JPEG/", "");
-            board[i] = board[i].replace(".jpg", "");
-        }
         for (int i = 0; i < allCards.length; i++) {
             allCards[i] = allCards[i].replace("file:JPEG/", "");
             allCards[i] = allCards[i].replace(".jpg", "");
+        }
+    }
+
+    /*this method will populate handDict*/
+    public void addHandValues() {
+        for (String card: allCards) {
+            handDict.put(card, rankValues.get(card));
         }
     }
 
@@ -61,11 +59,87 @@ public class handEvaluator {
     }
 
     private void populateDict() {
-        rankValues.put("A", 14); rankValues.put("K", 13); rankValues.put("Q", 12);
-        rankValues.put("J", 11); rankValues.put("10", 10); rankValues.put("9", 9);
-        rankValues.put("8", 8); rankValues.put("7", 7); rankValues.put("6", 6);
-        rankValues.put("5", 5); rankValues.put("4", 4); rankValues.put("3", 3);
-        rankValues.put("2", 2);
+        /*major spaghetti, please ignore */
+        rankValues.put("AS", 14); rankValues.put("KS", 13); rankValues.put("QS", 12);
+        rankValues.put("JS", 11); rankValues.put("10S", 10); rankValues.put("9S", 9);
+        rankValues.put("8S", 8); rankValues.put("7S", 7); rankValues.put("6S", 6);
+        rankValues.put("5S", 5); rankValues.put("4S", 4); rankValues.put("3S", 3);
+        rankValues.put("2S", 2);
+        rankValues.put("AH", 14); rankValues.put("KH", 13); rankValues.put("QH", 12);
+        rankValues.put("JH", 11); rankValues.put("10H", 10); rankValues.put("9H", 9);
+        rankValues.put("8H", 8); rankValues.put("7H", 7); rankValues.put("6H", 6);
+        rankValues.put("5H", 5); rankValues.put("4H", 4); rankValues.put("3H", 3);
+        rankValues.put("2H", 2);
+        rankValues.put("AD", 14); rankValues.put("KD", 13); rankValues.put("QD", 12);
+        rankValues.put("JD", 11); rankValues.put("10D", 10); rankValues.put("9D", 9);
+        rankValues.put("8D", 8); rankValues.put("7D", 7); rankValues.put("6D", 6);
+        rankValues.put("5D", 5); rankValues.put("4D", 4); rankValues.put("3D", 3);
+        rankValues.put("2D", 2);
+        rankValues.put("AC", 14); rankValues.put("KC", 13); rankValues.put("QC", 12);
+        rankValues.put("JC", 11); rankValues.put("10C", 10); rankValues.put("9C", 9);
+        rankValues.put("8C", 8); rankValues.put("7C", 7); rankValues.put("6C", 6);
+        rankValues.put("5C", 5); rankValues.put("4C", 4); rankValues.put("3C", 3);
+        rankValues.put("2C", 2);
+    }
+
+    private String[] findBestHand() {
+        /*call the methods in the order for best hand to worst. Eventually, I should have this
+        * method return a "score". This will make it easier to settle tiebreakers when the computer
+        * and the player both have the same hand (AA KKK) vs (QQ KKK) Hands will be */
+        /* TODO: Must format all the methods below so that their outputs "sort" the hands. This will
+        * TODO: make the above problem easy. Below are the formats for each hand*/
+        /*Straight Flush: [high to low]
+        *Four of a Kind: [X, X, X, X, Y]
+        * Full House: [X, X, X, Y, Y]
+        *  Flush: [high to low]
+        *  Straight: [high to low]
+        *  Three of a Kind: [X, X, X, high to low]
+        *  Two Pair: [X, X, Y, Y, Z]
+        *  Pair: [X, X, high to low]
+        *  High Card: [High to low]
+        *  might want to make separate method that makes high to low as many of these require it */
+
+        String[] theHand = new String[]{"X", "X", "X", "X", "X"};
+
+        if (!Arrays.equals(straightFlush(), noHand)) {
+            System.out.println("straight flush ");
+            return straightFlush();
+        }
+        if (!Arrays.equals(fourKind(), noHand)) {
+            System.out.println("four of a kind  ");
+            return fourKind();
+        }
+
+        if (!Arrays.equals(fullHouse(), noHand)) {
+            System.out.println("full house ");
+            return fullHouse();
+        }
+        if (!Arrays.equals(flush(), noHand)) {
+            System.out.println("flush ");
+            return flush();
+        }
+
+        if (!Arrays.equals(straight(), noHand)) {
+            System.out.println("straight ");
+            return straight();
+        }
+
+        if (!Arrays.equals(threeKind(), noHand)) {
+            System.out.println("three kind  ");
+            return threeKind();
+        }
+
+        if (!Arrays.equals(twoPair(), noHand)) {
+            System.out.println("two pair ");
+            return twoPair();
+        }
+
+        if (!Arrays.equals(pair(), noHand)) {
+            System.out.println("pair");
+            return pair();
+        }
+        System.out.println("high card");
+        return allCards;
     }
 
 
@@ -75,7 +149,6 @@ public class handEvaluator {
 
     /*THE HANDS OF POKER FROM BEST TO WORST. We shall check from the best ot the worst*/
     /*
-     * ROYAL FLUSH
      * STRAIGHT FLUSH
      * FOUR OF A KIND
      * FULL HOUSE
@@ -87,18 +160,53 @@ public class handEvaluator {
      * HIGH CARD
      * */
 
-    public String[] royalFlush() {
-        for (int i = 0; i < board.length; i++) {
-            System.out.println(board[i]);
+
+    private String[] straightFlush() {
+        /* I can just call flush, and straight */
+        String[] hand = allCardsNOSUIT.clone();
+        if (!Arrays.equals(straight(), noHand) && !Arrays.equals(flush(), noHand)) {
+            return hand;
         }
-        return handCards;
+        handValue = 9;
+        return noHand;
+    }
+
+
+    private String[] fourKind() {
+        String[] hand = allCardsNOSUIT.clone();
+        Map<String, Integer> cardFreq = new HashMap<String, Integer>();
+        for (String card: hand) {
+            cardFreq.merge(card, 1, Integer::sum);
+            if (cardFreq.get(card) == 4) {
+                return hand;
+            }
+        }
+        handValue = 8;
+        return noHand;
+
+    }
+
+
+    private String[] fullHouse() {
+        /*just check if there are only 2 different cards */
+        String[] hand = allCardsNOSUIT.clone();
+        Set<String> cardSet = new HashSet<String>();
+        for (String card: hand) {
+            cardSet.add(card);
+        }
+        if (cardSet.size() == 2) {
+            return hand;
+        }
+        handValue = 7;
+        return noHand;
+
+
     }
 
     private String[] flush() {
         /*this method is proof I can use data structures besides arrayLists, even if it's really not
         necessary :)
          */
-        /*TODO: Make sure that it returns the highest flush*/
         List<String> clubs = new LinkedList<>();
         List<String> diamonds = new LinkedList<>();
         List<String> hearts = new LinkedList<>();
@@ -123,13 +231,13 @@ public class handEvaluator {
                 spades.add(card);
             }
         }
-        /*TODO: fix this so that it only returns 5 cards, as well as the highest possible flush*/
         for (List<String> candidate : suits) {
             if (candidate.size() > 4){
                 String[] array = candidate.toArray(new String[candidate.size()]);
                 return array;
             }
         }
+        handValue = 6;
         return noHand;
     }
 
@@ -158,55 +266,71 @@ public class handEvaluator {
                 return straight;
             }
         }
+        handValue = 5;
+        return noHand;
+    }
+    private String[] threeKind() {
+        /*Throw them into a hashSet, see if there are duplicates.*/
+        String[] hand = allCardsNOSUIT.clone();
+        Map<String, Integer> cardFreq = new HashMap<String, Integer>();
+        for (String card: hand) {
+            cardFreq.merge(card, 1, Integer::sum);
+            if (cardFreq.get(card) == 3) {
+                return hand;
+            }
+        }
+        handValue = 4;
         return noHand;
     }
 
-    private void pair() {
-        /*Pair must be able to return the 3 high cards associated with it ~ this is very important*/
-        /*These methods are being called in order from best to worst; therefore it's not necessary
-        /*to make sure that pair() only checks for one pair. If this method is ever called, we know
-        that there doesn't exist a two pair in the hand. */
+    private String[] twoPair() {
+        /*Throw them into a hashSet, see if size is 3.*/
         String[] hand = allCardsNOSUIT.clone();
+        Set<String> cardSet = new HashSet<String>();
+        for (String card: hand) {
+            cardSet.add(card);
+        }
+        if (cardSet.size() != 3) {
+            return noHand;
+        }
+        handValue = 3;
+        return hand;
+    }
+
+    private String[] pair() {
+        /*Throw them into a hashSet, see if there are duplicates.*/
+        String[] hand = allCardsNOSUIT.clone();
+        Set<String> cardSet = new HashSet<String>();
+        for (String card: hand) {
+            cardSet.add(card);
+        }
+        if (cardSet.size() == hand.length) {
+            return noHand;
+        }
+        handValue = 2;
+        return hand;
     }
 
 
-    /*I've made the realization that it's important to have a comparator to compare two cards
-    * Let's make that.*/
 
-    public int compare(String c1, String c2) {
-        int card1 = rankValues.get(c1);
-        int card2 = rankValues.get(c2);
-
-        if (card1 > card2) {
-            return 1;
-        }
-        if (card2 > card1) {
-            return -1;
-        }
-        return 0;
-    }
-
-    public void sort() {
-        /*Since we can't override compareTo for strings since the class is final, we're going to have
-        * to write this method old fashion style; going to use n^2 solution since it's only O(91)*/
-        String[] dupCards = allCardsNOSUIT.clone();
-        String[] sortedCards = new String[allCardsNOSUIT.length];
-        while (dupCards.length != 0) {
-            int index = 0;
-            for (int i = 0; i < allCardsNOSUIT.length; i++) {
-
-            }
-        }
+    /*This method will sort the values by rank.
+     * Can work for Straight Flushes, Straights, Flushes, High Cards */
+    public void sort(){
+        Comparator<String> comparator = new ValueComparator(handDict);
+        //TreeMap is a map sorted by its keys.
+        //The comparator is used to sort the TreeMap by keys.
+        TreeMap<String, Integer> result = new TreeMap<String, Integer>(comparator);
+        result.putAll(handDict);
+        allCardsSuited = result.navigableKeySet().toArray();
     }
 
 
 
     public static void main(String[] args) {
         /*(String[] inHandCards, String[] inBoard)*/
-        String[] inBoard = new String[]{"file:JPEG/AS.jpg","file:JPEG/10H.jpg","file:JPEG/KC.jpg","file:JPEG/9C.jpg","file:JPEG/2C.jpg" };
-        String[] inHandCards = new String[]{"file:JPEG/QC.jpg","file:JPEG/AC.jpg"};
-        handEvaluator hand = new handEvaluator(inHandCards, inBoard);
-        System.out.println(Arrays.toString(hand.allCardsNOSUIT));
+        String[] inBoard = new String[]{"file:JPEG/9H.jpg","file:JPEG/JD.jpg","file:JPEG/6H.jpg","file:JPEG/6C.jpg","file:JPEG/5H.jpg" };
+        handEvaluator hand = new handEvaluator(inBoard);
+        System.out.println(hand.findBestHand());
     }
 
 
